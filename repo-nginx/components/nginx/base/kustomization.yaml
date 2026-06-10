@@ -5,6 +5,7 @@ resources:
   - nginx-deployment.yaml
   - nginx-service.yaml
   - nginx-pvc.yaml
+  - nginx-route.yaml
 
 configMapGenerator:
   - name: index-html

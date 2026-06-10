@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: registry.redhat.io/rhel8/nginx-120:latest
         ports:
         - containerPort: 80
           name: http
