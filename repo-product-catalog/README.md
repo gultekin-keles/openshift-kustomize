@@ -124,10 +124,9 @@ resources:
 
 #### Test Ortamı (`overlays/test/kustomization.yaml`)
 ```yaml
+# Root kustomization'ı miras alıyoruz (components listesine değil)
 resources:
-  - ../../components/database/base
-  - ../../components/client/base
-  - ../../components/server/base
+  - ../../
 
 replicas:
   - name: server
@@ -143,10 +142,9 @@ patchesStrategicMerge:
 
 #### Pre-Production Ortamı (`overlays/pre-prod/kustomization.yaml`)
 ```yaml
+# Root kustomization'ı miras alıyoruz (components listesine değil)
 resources:
-  - ../../components/database/base
-  - ../../components/client/base
-  - ../../components/server/base
+  - ../../
 
 commonLabels:
   environment: pre-prod
@@ -162,10 +160,9 @@ replicas:
 
 #### Production Ortamı (`overlays/prod/kustomization.yaml`)
 ```yaml
+# Root kustomization'ı miras alıyoruz (components listesine değil)
 resources:
-  - ../../components/database/base
-  - ../../components/client/base
-  - ../../components/server/base
+  - ../../
 
 commonLabels:
   environment: prod

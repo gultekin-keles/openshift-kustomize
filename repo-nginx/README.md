@@ -45,6 +45,7 @@ resources:
   - nginx-deployment.yaml
   - nginx-service.yaml
   - nginx-pvc.yaml
+  - nginx-route.yaml
 
 configMapGenerator:
   - name: index-html
@@ -70,7 +71,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: registry.redhat.io/rhel8/nginx-120:latest
         ports:
         - containerPort: 80
         volumeMounts:
@@ -143,8 +144,11 @@ spec:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Root kustomization'ı miras alıyoruz (components listesine değil)
 resources:
-  - ../../components/nginx/base
+  - ../../
+
+namespace: web-pay
 
 replicas:
   - name: nginx
@@ -171,8 +175,11 @@ configMapGenerator:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Root kustomization'ı miras alıyoruz (components listesine değil)
 resources:
-  - ../../components/nginx/base
+  - ../../
+
+namespace: web-pay
 
 replicas:
   - name: nginx
@@ -199,8 +206,11 @@ configMapGenerator:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Root kustomization'ı miras alıyoruz (components listesine değil)
 resources:
-  - ../../components/nginx/base
+  - ../../
+
+namespace: web-pay
 
 replicas:
   - name: nginx
