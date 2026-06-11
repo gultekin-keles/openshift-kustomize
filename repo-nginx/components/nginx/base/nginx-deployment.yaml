@@ -22,11 +22,18 @@ spec:
       - name: nginx
         image: registry.redhat.io/rhel8/nginx-120:latest
         ports:
-        - containerPort: 8080  # RHEL Nginx imajları varsayılan olarak 8080 portunu dinler
+        - containerPort: 8080
           name: http
         env:
         - name: NGINX_CONTAINER_RUN_AS
           value: nginx
+        
+        # --- YENİ ADIM: AÇILIŞTA HTML DOSYASINI GÜVENLİCE YAZIYORUZ ---
+        command: ["/bin/bash", "-c"]
+        args:
+          - cp /tmp/config/index.html /opt/app-root/src/index.html && exec /usr/libexec/s2i/run
+        # ----------------------------------------------------------------
+
         resources:
           requests:
             memory: "64Mi"
@@ -35,11 +42,9 @@ spec:
             memory: "256Mi"
             cpu: "500m"
         volumeMounts:
-        # /opt/app-root/src/ yerine doğrudan Nginx'in ham HTML dizinini hedefliyoruz:
-        # Bu sayede S2I başlangıç betiğini bypass eder ve pod kapatılmaz.
+        # ConfigMap'i geçici tarafsız bir klasöre bağlıyoruz (subPath olmadan)
         - name: html-volume
-          mountPath: /usr/share/nginx/html/index.html
-          subPath: index.html
+          mountPath: /tmp/config
       volumes:
       - name: html-volume
         configMap:
