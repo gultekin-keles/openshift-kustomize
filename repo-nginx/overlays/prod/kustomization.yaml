@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: web-pay
 
 resources:
-  - ../../
+  - ../../components/nginx/base
 
 replicas:
   - name: nginx
@@ -15,6 +15,6 @@ commonLabels:
 
 configMapGenerator:
   - name: index-html
-    literals:
-      - index.html=<html><body><h1>Hello World from PROD Cluster</h1></body></html>
-    behavior: replace
+    files:
+      - index.html
+

@@ -6,8 +6,3 @@ resources:
   - nginx-service.yaml
   - nginx-pvc.yaml
   - nginx-route.yaml
-
-configMapGenerator:
-  - name: index-html
-    literals:
-      - index.html=<html><body><h1>Hello World from Nginx</h1></body></html>

@@ -15,6 +15,6 @@ commonLabels:
 
 configMapGenerator:
   - name: index-html
-    literals:
-      - index.html=<html><body><h1>Hello World from TEST Cluster</h1></body></html>
+    files:
+      - index.html
 
