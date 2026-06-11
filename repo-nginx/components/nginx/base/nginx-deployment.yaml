@@ -44,3 +44,4 @@ spec:
       - name: html-volume
         configMap:
           name: index-html
+          defaultMode: 420
