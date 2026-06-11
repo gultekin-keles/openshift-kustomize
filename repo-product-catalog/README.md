@@ -1,220 +1,152 @@
 # Product Catalog Repository
 
-Bu repository, Product Catalog uygulamasının Kubernetes (OpenShift) yapılandırmalarını içerir. Üç katmanlı bir mimari ile Database, Server (Backend) ve Client (Frontend) bileşenlerinden oluşur.
+Bu repository, Product Catalog uygulamasının OpenShift/Kubernetes yapılandırmalarını içerir. Uygulama üç katmanlıdır: Database, Server (Backend) ve Client (Frontend).
 
 ## Klasör Yapısı
 
 ```
 repo-product-catalog/
-├── components/                          # Ortak Base Bileşenler
-│   ├── client/base/                    # Frontend bileşeni
+├── components/
+│   ├── client/base/
 │   │   ├── kustomization.yaml
-│   │   ├── client-deployment.yaml      # Client deployment (replicas temel olarak 1)
-│   │   ├── client-route.yaml           # OpenShift Route - HTTPS edge termination
-│   │   ├── client-service.yaml         # ClusterIP Service
+│   │   ├── client-deployment.yaml
+│   │   ├── client-route.yaml
+│   │   ├── client-service.yaml
 │   │   └── config/
-│   │       └── config.js               # Client konfigürasyonu
-│   │
-│   ├── server/base/                    # Backend bileşeni
+│   │       └── config.js
+│   ├── server/base/
 │   │   ├── kustomization.yaml
-│   │   ├── server-deployment.yaml      # Server deployment (replicas temel olarak 1)
-│   │   ├── server-route.yaml           # OpenShift Route - HTTPS edge termination
-│   │   ├── server-service.yaml         # ClusterIP Service
-│   │   ├── default-view-rolebinding.yaml # RBAC configuration
+│   │   ├── server-deployment.yaml
+│   │   ├── server-route.yaml
+│   │   ├── server-service.yaml
+│   │   ├── default-view-rolebinding.yaml
 │   │   └── config/
-│   │       └── application.properties  # Server konfigürasyonu
-│   │
-│   └── database/base/                  # Database bileşeni
+│   │       └── application.properties
+│   └── database/base/
 │       ├── kustomization.yaml
-│       ├── db-deployment.yaml          # PostgreSQL deployment (replicas temel olarak 1)
-│       ├── db-service.yaml             # Headless Service
-│       ├── db-pvc.yaml                 # PersistentVolumeClaim (1Gi default)
-│       ├── db-secret.yaml              # Database credentials
+│       ├── db-deployment.yaml
+│       ├── db-service.yaml
+│       ├── db-pvc.yaml
+│       ├── db-secret.yaml
 │       └── config/
-│           ├── 90-init-database.sh     # Database initialization script
-│           ├── import.sql              # Data import
-│           └── schema.sql              # Database schema
-│
-└── overlays/                           # Ortam-Spesifik Yapılandırmalar
-    ├── test/                           # Test Ortamı
-    │   ├── kustomization.yaml          # Test ayarları: 1 replika her bileşen
+│           ├── 90-init-database.sh
+│           ├── import.sql
+│           └── schema.sql
+└── overlays/
+    ├── test/
+    │   ├── kustomization.yaml
     │   └── patches/
-    │       └── route-host.yaml         # Route host adresleri (*.test.example.com)
-    │
-    ├── pre-prod/                       # Pre-Production Ortamı
-    │   └── kustomization.yaml          # Pre-prod ayarları: 2 replika, environment label
-    │
-    └── prod/                           # Production Ortamı
-        ├── kustomization.yaml          # Prod ayarları: 4 replika, environment label
+    │       └── route-host.yaml
+    ├── pre-prod/
+    │   └── kustomization.yaml
+    └── prod/
+        ├── kustomization.yaml
         └── patches/
-            ├── db-pvc-size.yaml        # PVC boyutlandırma (10Gi)
-            └── secure-route.yaml       # Güvenli Route configuration
+            ├── db-pvc-size.yaml
+            └── secure-route.yaml
 
-└── kustomization.yaml                  # Root kustomization (base deployment)
+└── kustomization.yaml
 ```
 
-## Kustomization Dosyaları Açıklaması
+## Root Kustomization
 
-### Base Kustomization (`components/*/base/kustomization.yaml`)
+`repo-product-catalog/kustomization.yaml` dosyası şu kaynakları içerir:
 
-#### Client Base
-```yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+- `components/client/base`
+- `components/server/base`
+- `components/database/base`
 
-resources:
-  - client-service.yaml
-  - client-route.yaml
-  - client-deployment.yaml
-```
-- Client deployment, service ve route'u tanımlar
-- ConfigMap generator (commented out) client config dosyasını inject edebilir
+Root kustomization ayrıca `server` ve `client` için default replika değerlerini tutar.
 
-#### Server Base
-```yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+## Base Bileşenler
 
-generatorOptions:
-  disableNameSuffixHash: true
-  labels:
-    app.kubernetes.io/part-of: product-catalog
+### Client Base
 
-configMapGenerator:
-  - name: server
-    files:
-      - config/application.properties
+`components/client/base/kustomization.yaml`:
 
-resources:
-  - default-view-rolebinding.yaml
-  - server-service.yaml
-  - server-route.yaml
-  - server-deployment.yaml
-```
-- Server deployment, service, route ve RBAC konfigürasyonunu tanımlar
-- application.properties dosyasını ConfigMap olarak oluşturur
+- `client-service.yaml`
+- `client-route.yaml`
+- `client-deployment.yaml`
 
-#### Database Base
-```yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+Bu yapı frontend için ClusterIP Service, Route ve Deployment sağlar.
 
-generatorOptions:
-  disableNameSuffixHash: true
-  labels:
-    app.kubernetes.io/part-of: product-catalog
+### Server Base
 
-configMapGenerator:
-- name: productdb-init
-  files:
-    - config/90-init-database.sh
-    - config/import.sql
-    - config/schema.sql
+`components/server/base/kustomization.yaml`:
 
-resources:
-  - db-pvc.yaml
-  - db-secret.yaml
-  - db-service.yaml
-  - db-deployment.yaml
-```
-- Database deployment, service, PVC ve Secret'i tanımlar
-- Initialization scriptleri ve SQL dosyalarını ConfigMap olarak oluşturur
+- `default-view-rolebinding.yaml`
+- `server-service.yaml`
+- `server-route.yaml`
+- `server-deployment.yaml`
+- `config/application.properties` dosyasını `ConfigMap` olarak oluşturur
 
-### Overlay Kustomizations
+### Database Base
 
-#### Test Ortamı (`overlays/test/kustomization.yaml`)
-```yaml
-# Root kustomization'ı miras alıyoruz (components listesine değil)
-resources:
-  - ../../
+`components/database/base/kustomization.yaml`:
 
-replicas:
-  - name: server
-    count: 1
-  - name: client
-    count: 1
+- `db-pvc.yaml`
+- `db-secret.yaml`
+- `db-service.yaml`
+- `db-deployment.yaml`
+- `config/90-init-database.sh`, `config/import.sql` ve `config/schema.sql` dosyalarını `ConfigMap` olarak oluşturur
 
-patchesStrategicMerge:
-  - patches/route-host.yaml
-```
-- Test ortamı için 1 replika kullanır
-- Route hostları test.example.com üzerinden ayarlanır
+## Overlay Konfigürasyonları
 
-#### Pre-Production Ortamı (`overlays/pre-prod/kustomization.yaml`)
-```yaml
-# Root kustomization'ı miras alıyoruz (components listesine değil)
-resources:
-  - ../../
+### Test Ortamı (`overlays/test`)
 
-commonLabels:
-  environment: pre-prod
+- `resources: - ../../`
+- Namespace: `product-catalog`
+- `server` ve `client` için 1 replika
+- `commonLabels: environment: test`
+- `patchesStrategicMerge` ile `patches/route-host.yaml` uygulanır
 
-replicas:
-  - name: server
-    count: 2
-  - name: client
-    count: 2
-```
-- Pre-prod ortamı için 2 replika kullanır
-- Tüm kaynaklar `environment: pre-prod` labeli alırlar
+`route-host.yaml` içinde test ortamı için aşağıdaki hostlar tanımlıdır:
 
-#### Production Ortamı (`overlays/prod/kustomization.yaml`)
-```yaml
-# Root kustomization'ı miras alıyoruz (components listesine değil)
-resources:
-  - ../../
+- `client.apps.baremetal.konsalt.info`
+- `server.apps.baremetal.konsalt.info`
 
-commonLabels:
-  environment: prod
+### Pre-Production Ortamı (`overlays/pre-prod`)
 
-replicas:
-  - name: server
-    count: 4
-  - name: client
-    count: 4
+- `resources: - ../../`
+- Namespace: `product-catalog`
+- `server` ve `client` için 2 replika
+- `commonLabels: environment: pre-prod`
 
-patchesStrategicMerge:
-  - patches/db-pvc-size.yaml
-  - patches/secure-route.yaml
-```
-- Production ortamı için 4 replika kullanır
-- Database PVC boyutu 10Gi'ye artırılır
-- Route yapılandırması güvenli hale getirilir (passthrough termination)
+### Production Ortamı (`overlays/prod`)
+
+- `resources: - ../../`
+- Namespace: `product-catalog`
+- `server` ve `client` için 4 replika
+- `commonLabels: environment: prod`
+- `patchesStrategicMerge` ile:
+  - `patches/db-pvc-size.yaml`
+  - `patches/secure-route.yaml`
+
+`db-pvc-size.yaml` prod ortamında database PVC boyutunu `10Gi` olarak artırır.
+`secure-route.yaml` prod ortamı için `Route` TLS terminasyonunu `passthrough` olarak ayarlar.
 
 ## Deployment
 
-### Base Deployment (Geliştirme)
+### Base Deployment
+
 ```bash
 kubectl apply -k repo-product-catalog/
 ```
 
 ### Test Ortamı
+
 ```bash
 kubectl apply -k repo-product-catalog/overlays/test/
 ```
 
 ### Pre-Production Ortamı
+
 ```bash
 kubectl apply -k repo-product-catalog/overlays/pre-prod/
 ```
 
 ### Production Ortamı
+
 ```bash
 kubectl apply -k repo-product-catalog/overlays/prod/
 ```
-
-## Önemli Notlar
-
-- **Database Persistence**: Database deployment PVC tarafından korunur
-- **Configuration Management**: Tüm konfigürasyonlar ConfigMap ve Secret olarak yönetilir
-- **TLS/SSL**: Routes edge termination ile HTTPS destekler
-- **Replication**: Ortamlar arasında replika sayıları farklılık gösterir
-- **Self-Healing**: Kubernetes deployment'ları replica sayısını otomatik olarak korur
-
-## GitOps Prensipleri
-
-Bu repository GitOps ilkelerine uyar:
-1. **Tüm konfigürasyonlar Git'te** - Version control ve audit trail
-2. **Self-Healing** - Replika sayısı otomatik olarak düzeltilir
-3. **Drift Detection** - ArgoCD gibi tools ile çalışır
-4. **Ortam Yönetimi** - Overlays ile ortamlar arasında geçiş yapılır
