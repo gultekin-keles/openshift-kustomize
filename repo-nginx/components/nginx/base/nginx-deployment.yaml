@@ -35,10 +35,10 @@ spec:
             memory: "256Mi"
             cpu: "500m"
         volumeMounts:
-        # subPath ekleyerek klasörün tamamını ezmek yerine sadece index.html dosyasını değiştiriyoruz.
-        # Böylece S2I imajının başlangıç script'leri patlamıyor ve pod CrashLoop'a girmiyor.
+        # /opt/app-root/src/ yerine doğrudan Nginx'in ham HTML dizinini hedefliyoruz:
+        # Bu sayede S2I başlangıç betiğini bypass eder ve pod kapatılmaz.
         - name: html-volume
-          mountPath: /opt/app-root/src/index.html
+          mountPath: /usr/share/nginx/html/index.html
           subPath: index.html
       volumes:
       - name: html-volume
