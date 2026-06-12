@@ -11,7 +11,7 @@ replicas:
   - name: server
     count: 1
   - name: client
-    count: 1
+    count: 2
 
 commonLabels:
   environment: test
