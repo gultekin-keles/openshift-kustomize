@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. Prod overlay, üretim dağıtımı için kaynakları toplar.
+resources:
+- ../../../components/service-a/base
+- ../../../components/service-b/base
+- ../../../components/service-c/base
+- ../../../components/worker/base
+- ../../../components/database/base
+- ../../../components/cronjob/base
+- ../../../components/ocp-app/base
+
+# 2. Prod ortamı için replica sayıları.
+replicas:
+- name: service-a
+  count: 3
+- name: service-b
+  count: 3
+- name: service-c
+  count: 2
+
+# 3. Etiketler prod ortamını belirtir.
+labels:
+- includeSelectors: true
+  pairs:
+    environment: prod
+    scenario: full
+
+# 4. Patchler, üretim ortamına özel konfigürasyon değişikliklerini içerir.
+patches:
+- path: patches/secure-route.yaml
+- path: patches/database-resources.yaml

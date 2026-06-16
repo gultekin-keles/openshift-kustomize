@@ -1,0 +1,18 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  # 1. ImageStream, OpenShift'e image metadata'sı sağlar.
+  name: ocp-app
+  labels:
+    app: repo-template1
+    component: ocp-app
+spec:
+  tags:
+  - name: latest
+    from:
+      kind: DockerImage
+      # 2. Asıl image kaynağı buraya yazılır.
+      name: registry.example.com/repo-template1/ocp-app:latest
+    importPolicy:
+      # 3. Güvenlik için insecure false olarak bırakın.
+      insecure: false

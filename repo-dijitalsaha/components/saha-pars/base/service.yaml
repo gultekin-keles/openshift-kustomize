@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: saha-pars
+  labels:
+    app: saha-pars
+    app.kubernetes.io/component: saha-pars
+    app.kubernetes.io/name: saha-pars
+spec:
+  type: ClusterIP
+  selector:
+    app: saha-pars
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 8443
+    targetPort: 8443
+    protocol: TCP
+  - name: jolokia
+    port: 8778
+    targetPort: 8778
+    protocol: TCP

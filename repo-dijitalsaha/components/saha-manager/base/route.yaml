@@ -1,0 +1,23 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # 1. Route adı, dış erişim için URL oluşturur
+  name: saha-manager
+  labels:
+    app: saha-manager
+    app.kubernetes.io/component: saha-manager
+    app.kubernetes.io/name: saha-manager
+spec:
+  # 2. Hedef service
+  to:
+    kind: Service
+    name: saha-manager
+    weight: 100
+  # 3. Port tanımlaması
+  port:
+    targetPort: http
+  # 4. TLS konfigürasyonu
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: app-pre-prod
+
+# ========== KUSTOMIZATION OVERLAY ==========
+# Bu overlay, base resources'ı pre-production ortamı için özelleştirir
+
+resources:
+- ../../../components/app/base
+
+# ========== NAMESPACESı ==========
+# Pre-prod ortamı için ayrı namespace
+# namespace: pre-prod
+
+# ========== ORTAK PREFIX/SUFFIX ==========
+namePrefix: preprod-
+nameSuffix: -preprod
+
+# ========== REPLICA AYARLARI ==========
+# Pre-prod ortamında 2 replica (production öncesi test)
+replicas:
+- name: app
+  count: 2
+
+# ========== LABELLERİ ==========
+labels:
+- includeSelectors: true
+  pairs:
+    environment: pre-prod
+    tier: pre-prod
+
+# ========== ANNOTATIONS ==========
+commonAnnotations:
+  managed-by: kustomize
+  environment: pre-prod

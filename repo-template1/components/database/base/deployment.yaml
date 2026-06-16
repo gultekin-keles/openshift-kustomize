@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 1. Bu Deployment, PostgreSQL uyumluluğunda bir veritabanı için örnektir.
+  name: database
+  labels:
+    app: repo-template1
+    component: database
+spec:
+  # 2. Veritabanı için tek bir replika genellikle yeterlidir.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repo-template1
+      component: database
+  template:
+    metadata:
+      labels:
+        app: repo-template1
+        component: database
+    spec:
+      containers:
+      - name: postgres
+        # 3. Image, veritabanı için kullanılacak container imajını belirtir.
+        image: registry.example.com/repo-template1/postgres:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: "repo_template1"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: database-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: database-password
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
+        readinessProbe:
+          tcpSocket:
+            port: postgres
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # 4. Database servis adı, diğer podların bağlanacağı isimdir.
+  name: database
+  labels:
+    app: repo-template1
+    component: database
+spec:
+  # 5. Selector, bu servisin hangi Pod'a trafiği yönlendireceğini belirler.
+  selector:
+    app: repo-template1
+    component: database
+  ports:
+  - name: postgres
+    # 6. Port, cluster içinden veritabanına erişim için kullanılır.
+    port: 5432
+    targetPort: postgres
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  # 7. PVC veritabanı için kalıcı disk isteğini tanımlar.
+  name: database-pvc
+  labels:
+    app: repo-template1
+    component: database
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcard
+  labels:
+    app: vcard
+spec:
+  selector:
+    app: vcard
+  ports:
+  - port: 8080
+    targetPort: http
+    name: http
+    protocol: TCP
+  - port: 8443
+    targetPort: https
+    name: https
+    protocol: TCP
+  type: ClusterIP

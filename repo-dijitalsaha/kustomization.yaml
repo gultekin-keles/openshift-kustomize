@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. Repo-dijitalsaha kök kustomization, tüm bileşenleri aggregates eder
+resources:
+- components/saha-manager/base
+- components/saha-web/base
+- components/saha-sync/base
+- components/saha-pars/base

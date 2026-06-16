@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: app-root
+
+# ========== ROOT KUSTOMIZATION ==========
+# Bu dosya tüm uygulamanın konfigürasyonunun giriş noktasıdır
+# Normally buradan deploy etmek yerine overlays/ kullanılır
+
+resources:
+- components/app/base

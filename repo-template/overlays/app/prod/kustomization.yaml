@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: app-prod
+
+# ========== KUSTOMIZATION OVERLAY ==========
+# Bu overlay, base resources'ı production ortamı için özelleştirir
+
+resources:
+- ../../../components/app/base
+
+# ========== NAMESPACESı ==========
+# Production ortamı için production namespace
+# namespace: production
+
+# ========== ORTAK PREFIX/SUFFIX ==========
+# Production'da isim değişikliği yapmıyoruz (standart isimler kullan)
+# namePrefix: ""
+# nameSuffix: ""
+
+# ========== REPLICA AYARLARI ==========
+# Production ortamında 3 replica (yüksek availability)
+replicas:
+- name: app
+  count: 3
+
+# ========== LABELLERİ ==========
+labels:
+- includeSelectors: true
+  pairs:
+    environment: prod
+    tier: production
+
+# ========== ANNOTATIONS ==========
+commonAnnotations:
+  managed-by: kustomize
+  environment: production
+  critical: "true"

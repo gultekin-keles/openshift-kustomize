@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. Test ortamı için tüm bileşenler
+resources:
+- ../../../components/saha-manager/base
+- ../../../components/saha-web/base
+- ../../../components/saha-sync/base
+- ../../../components/saha-pars/base
+
+# 2. Test ortamı için isim önek/soneki
+namePrefix: test-
+nameSuffix: -test
+
+# 3. Test ortamı replika değerleri
+replicas:
+- name: saha-manager
+  count: 1
+- name: saha-sync
+  count: 1
+- name: saha-pars
+  count: 1
+
+# 4. Test ortamı labels
+labels:
+- includeSelectors: true
+  pairs:
+    environment: test
+    scenario: simple

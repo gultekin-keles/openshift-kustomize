@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 1. Bu bölümde Deployment adınızı belirleyin.
+  #    Örnek: service-b, backend-service
+  name: service-b
+  labels:
+    app: repo-template1
+    component: service-b
+spec:
+  # 2. replicas, eş zamanlı olarak kaç Pod çalışacağını tanımlar.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repo-template1
+      component: service-b
+  template:
+    metadata:
+      labels:
+        app: repo-template1
+        component: service-b
+    spec:
+      containers:
+      - name: service-b
+        # 3. Container image adresi: Kendi registry veya image adınızı kullanın.
+        image: registry.example.com/repo-template1/service-b:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: DATABASE_URL
+          value: "postgres://user:password@database:5432/dbname"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5

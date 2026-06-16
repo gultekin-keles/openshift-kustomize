@@ -1,0 +1,47 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  # 1. OpenShift DeploymentConfig, OpenShift platform özelliklerini kullanır.
+  name: ocp-app
+  labels:
+    app: repo-template1
+    component: ocp-app
+spec:
+  # 2. Kaç replika istendiğini buraya yazın.
+  replicas: 2
+  selector:
+    app: repo-template1
+    component: ocp-app
+  template:
+    metadata:
+      labels:
+        app: repo-template1
+        component: ocp-app
+    spec:
+      containers:
+      - name: ocp-app
+        # 3. Image, OpenShift ImageStream veya registry adresi kullanılabilir.
+        image: "registry.example.com/repo-template1/ocp-app:latest"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+  triggers:
+  - type: ConfigChange
+  - type: ImageChange
+    imageChangeParams:
+      automatic: true
+      containerNames:
+      - ocp-app
+      from:
+        kind: ImageStreamTag
+        name: ocp-app:latest

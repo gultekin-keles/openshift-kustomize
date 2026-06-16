@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # ========== CONFIGMAP METADATASı ==========
+  # ConfigMap, application konfigürasyonlarını depolar
+  # Sensitive olmayan (password, key olmayan) ayarları buraya koy
+  # Sensitive veriler için Secret kullan!
+  name: app-config
+  
+  labels:
+    app: app
+
+data:
+  # ========== KONFİGURASYON VERİLERİ ==========
+  # Anahtar-değer çifti olarak saklanır
+  # Deployment'da env değişkenleri veya file olarak mount edilebilir
+  
+  # Basit ortam değişkenleri
+  LOG_LEVEL: "INFO"
+  DATABASE_HOST: "postgres.default.svc.cluster.local"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "myapp_db"
+  API_TIMEOUT: "30"
+  MAX_CONNECTIONS: "100"
+  
+  # Çok satırlı konfigürasyon dosyası örneği (application.properties)
+  application.properties: |
+    # ========== APPLICATION CONFIGURATION ==========
+    app.name=MyApp
+    app.version=1.0.0
+    
+    # Database Configuration
+    spring.datasource.url=jdbc:postgresql://postgres:5432/myapp_db
+    spring.datasource.hikari.maximum-pool-size=20
+    spring.datasource.hikari.minimum-idle=5
+    
+    # Server Configuration
+    server.port=8080
+    server.servlet.context-path=/api
+    
+    # Logging
+    logging.level.root=INFO
+    logging.level.com.myapp=DEBUG
+    
+    # Features
+    feature.cache.enabled=true
+    feature.metrics.enabled=true
+  
+  # YAML format örneği
+  config.yaml: |
+    server:
+      port: 8080
+      servlet:
+        context-path: /api
+    
+    spring:
+      application:
+        name: myapp
+      datasource:
+        url: jdbc:postgresql://postgres:5432/myapp_db
+        username: app_user
+        password: ${DB_PASSWORD}  # Password Secret'dan gelecek
+      jpa:
+        hibernate:
+          ddl-auto: validate
+    
+    logging:
+      level:
+        root: INFO
+        com.myapp: DEBUG
+
+# ========== CONFIGMAP KULLANIM ÖRNEKLERI ==========
+# 
+# 1. Ortam değişkeni olarak kullanım (Deployment'da):
+# env:
+# - name: LOG_LEVEL
+#   valueFrom:
+#     configMapKeyRef:
+#       name: app-config
+#       key: LOG_LEVEL
+#
+# 2. Dosya olarak mount etme (Deployment'da):
+# volumeMounts:
+# - name: config-volume
+#   mountPath: /app/config
+# volumes:
+# - name: config-volume
+#   configMap:
+#     name: app-config
+#     items:
+#     - key: application.properties
+#       path: application.properties
+#
+# Notlar:
+# - ConfigMap'ı güncellersen mount ettiği pod'ları yeniden başlat
+# - ConfigMap'lar 1MB'a kadar limit
+# - Sensitive veriler için Secret kullan (bu template'te: secret.yaml)

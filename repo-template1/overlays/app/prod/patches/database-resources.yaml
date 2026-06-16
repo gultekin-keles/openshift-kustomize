@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 1. Bu patch, prod veya özel overlay'lerde veritabanı kaynaklarını arttırmak için kullanılır.
+  name: database
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgres
+        # 2. Burada sadece resources alanı değiştiriliyor.
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 1. Deployment adı, kullandığınız worker bileşenini tanımlar.
+  name: worker
+  labels:
+    app: repo-template1
+    component: worker
+spec:
+  # 2. replicas, kaç adet worker Pod'unun çalışacağını belirler.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repo-template1
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: repo-template1
+        component: worker
+    spec:
+      containers:
+      - name: worker
+        # 3. Image alanı; kendi registry ve image etiketinizi buraya yazın.
+        image: registry.example.com/repo-template1/worker:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: QUEUE_URL
+          value: "amqp://rabbitmq:5672"
+        - name: WORKER_THREADS
+          value: "4"
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "256Mi"
+          limits:
+            cpu: "400m"
+            memory: "512Mi"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "curl -f http://localhost:8080/health || exit 1"
+          initialDelaySeconds: 20
+          periodSeconds: 15
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "curl -f http://localhost:8080/ready || exit 1"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      # 4. restartPolicy, Pod'un başarısızlık durumunda nasıl yeniden başlayacağını belirler.
+      restartPolicy: Always

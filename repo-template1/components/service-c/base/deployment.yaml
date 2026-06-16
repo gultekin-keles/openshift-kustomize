@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 1. Deployment adı uygulamanızın kimliğidir.
+  name: service-c
+  labels:
+    app: repo-template1
+    component: service-c
+spec:
+  # 2. replicas, aynı anda çalışacak Pod sayısını belirler.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: repo-template1
+      component: service-c
+  template:
+    metadata:
+      labels:
+        app: repo-template1
+        component: service-c
+    spec:
+      containers:
+      - name: service-c
+        # 3. Image alanı, uygulama imajının kaynağını belirtir.
+        image: registry.example.com/repo-template1/service-c:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+          name: http
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "192Mi"
+          limits:
+            cpu: "350m"
+            memory: "384Mi"
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5

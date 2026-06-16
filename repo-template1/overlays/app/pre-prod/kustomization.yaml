@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. Pre-prod overlay, testten sonrakı üretime yakın ortam için kullanılır.
+resources:
+- ../../../components/service-a/base
+- ../../../components/service-b/base
+- ../../../components/service-c/base
+- ../../../components/worker/base
+- ../../../components/database/base
+- ../../../components/cronjob/base
+
+# 2. İsim ön eki/sonekleri, kaynakları çakışmadan ayırır.
+namePrefix: preprod-
+nameSuffix: -preprod
+
+# 3. Replica sayısı bu ortamda daha yüksek olabilir.
+replicas:
+- name: service-a
+  count: 2
+- name: service-b
+  count: 2
+
+# 4. Etiketler, bu overlay sonuçlarına eklenir.
+labels:
+- includeSelectors: true
+  pairs:
+    environment: pre-prod
+    scenario: staged

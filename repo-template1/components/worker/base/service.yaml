@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # 1. API sürümü ve tür, bu kaynağın bir Kubernetes Service olduğunu belirtir.
+  name: worker
+  labels:
+    app: repo-template1
+    component: worker
+spec:
+  # 2. Service bu selector ile worker Podlarını seçer.
+  selector:
+    app: repo-template1
+    component: worker
+  ports:
+  - # 3. Bu port, cluster içi trafiğin bağlanacağı porttur.
+    port: 8080
+    # 4. Hedef port container içinde dinlenen porttur.
+    targetPort: 8080
+    # 5. Port ismi, istenirse probe ve route tanımlarında kullanılabilir.
+    name: http
+  # 6. ClusterIP, bu servisin yalnızca cluster içinden erişilebilir olmasını sağlar.
+  type: ClusterIP

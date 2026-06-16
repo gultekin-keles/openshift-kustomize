@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  # 1. CronJob adı, görevin adını tanımlar.
+  name: daily-job
+  labels:
+    app: repo-template1
+    component: cronjob
+spec:
+  # 2. schedule alanı cron ifadesi kullanır.
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: daily-job
+            # 3. Image alanı, cron job'un çalıştıracağı imajdır.
+            image: registry.example.com/repo-template1/daily-job:latest
+            imagePullPolicy: IfNotPresent
+            args:
+            - "/app/run-daily.sh"
+            env:
+            - name: TIMEZONE
+              value: "Europe/Istanbul"
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "128Mi"
+              limits:
+                cpu: "250m"
+                memory: "256Mi"
+          # 4. restartPolicy, görev başarısız olursa yeniden denemeyi kontrol eder.
+          restartPolicy: OnFailure

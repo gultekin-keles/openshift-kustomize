@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: saha-sync
+  labels:
+    app: saha-sync
+    app.kubernetes.io/component: saha-sync
+    app.kubernetes.io/name: saha-sync
+spec:
+  type: ClusterIP
+  selector:
+    app: saha-sync
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 8443
+    targetPort: 8443
+    protocol: TCP
+  - name: jolokia
+    port: 8778
+    targetPort: 8778
+    protocol: TCP

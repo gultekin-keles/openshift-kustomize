@@ -1,0 +1,23 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # 1. Route adı, OpenShift üzerinde URL ile ilişkilendirilir.
+  name: service-b
+  labels:
+    app: repo-template1
+    component: service-b
+spec:
+  # 2. Route hangi servise trafik yönlendireceğini belirtir.
+  to:
+    kind: Service
+    name: service-b
+    weight: 100
+  port:
+    # 3. Service portunun ismini burada kullanın.
+    targetPort: http
+  tls:
+    # 4. TLS terminasyonu edge modunda yapılır.
+    termination: edge
+    # 5. HTTP talepleri HTTPS'e yönlendirilir.
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

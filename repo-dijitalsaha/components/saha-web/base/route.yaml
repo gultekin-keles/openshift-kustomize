@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: saha-web
+  labels:
+    app: saha-web
+    app.kubernetes.io/component: saha-web
+    app.kubernetes.io/name: saha-web
+spec:
+  to:
+    kind: Service
+    name: saha-web
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

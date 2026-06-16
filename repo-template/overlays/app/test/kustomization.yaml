@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: app-test
+
+# ========== KUSTOMIZATION OVERLAY ==========
+# Bu overlay, base resources'ı test ortamı için özelleştirir
+
+resources:
+- ../../../components/app/base
+
+# ========== NAMESPACESı ==========
+# Test ortamı için ayrı namespace (opsiyonel)
+# namespace: test
+
+# ========== ORTAK PREFIX/SUFFIX ==========
+# Tüm kaynakların isimlerine otomatik prefix/suffix ekle
+# Bu sayede test ortamındaki kaynaklar base'dekilerle çakışmaz
+namePrefix: test-
+nameSuffix: -test
+
+# ========== REPLICA AYARLARI ==========
+# Test ortamında daha az replica kullan
+replicas:
+- name: app
+  count: 1
+
+# ========== LABELLERİ ==========
+# Test ortamı için ek label ekle
+labels:
+- includeSelectors: true
+  pairs:
+    environment: test
+    tier: test
+
+# ========== KUSTOMIZATION OPSİYONLARI ==========
+# Test ortamına özgü ek ayarlar buraya gelir
+# Örneğin: image değişikliği, resource limits, env değişkenleri vb
+
+# commonLabels (deprecated, labels kullan)
+# commonAnnotations'da ekstra annotation ekleyebilirsin
+commonAnnotations:
+  managed-by: kustomize
+  environment: test

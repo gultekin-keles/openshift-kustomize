@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # 1. Servis adı, uygulamanızın eksternal veya internal ismi olabilir.
+  name: service-b
+  labels:
+    app: repo-template1
+    component: service-b
+spec:
+  # 2. Selector, bu servisin trafik yönlendireceği Podları belirler.
+  selector:
+    app: repo-template1
+    component: service-b
+  ports:
+  - # 3. Service portu, iç ağdan bu port üzerinden erişilir.
+    port: 8080
+    # 4. targetPort, Pod içindeki gerçek uygulama portunu ifade eder.
+    targetPort: http
+    # 5. İsim, Route veya probe tanımlamalarıyla eşlemek için kullanılır.
+    name: http
+  # 6. ClusterIP, servisin yalnızca cluster içinden erişilebilir olmasını sağlar.
+  type: ClusterIP

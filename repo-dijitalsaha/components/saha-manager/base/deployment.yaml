@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 1. Saha-manager deployment adı
+  name: saha-manager
+  labels:
+    app: saha-manager
+    app.kubernetes.io/component: saha-manager
+    app.kubernetes.io/name: saha-manager
+    app.openshift.io/runtime: java
+spec:
+  # 2. Replika sayısı, kaç instance çalışacağını belirler
+  replicas: 2
+  selector:
+    matchLabels:
+      app: saha-manager
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: saha-manager
+    spec:
+      containers:
+      # 3. Container adı ve image
+      - name: saha-manager
+        image: image-registry.openshift-image-registry.svc:5000/dijitalsaha/saha-manager:latest
+        imagePullPolicy: Always
+        # 4. Port tanımlamaları
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: http
+        - containerPort: 8443
+          protocol: TCP
+          name: https
+        - containerPort: 8778
+          protocol: TCP
+          name: jolokia
+        # 5. Java uygulaması için ortam değişkenleri
+        env:
+        - name: JAVA_APP_JAR
+          value: saha-manager-0.0.1-SNAPSHOT.war
+        - name: JAVA_OPTS_APPEND
+          value: -Dspring.profiles.active=test -Djava.awt.headless=true -Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        # 6. Health check probes
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

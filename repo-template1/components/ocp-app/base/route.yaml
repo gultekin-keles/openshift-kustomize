@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # 1. Route adı, OpenShift dış erişim URL'siyle ilişkilendirilir.
+  name: ocp-app
+  labels:
+    app: repo-template1
+    component: ocp-app
+spec:
+  to:
+    kind: Service
+    name: ocp-app
+    weight: 100
+  port:
+    # 2. Service port isminden referans alınır.
+    targetPort: http
+  tls:
+    # 3. TLS terminasyonu edge modunda yapılır.
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

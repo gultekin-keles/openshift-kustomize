@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # ========== METADATAm BÖLÜMÜ ==========
+  # name: Deployment'ın adı. OpenShift'te bu isim benzersiz olmalıdır.
+  # Değiştir: "app" yerine kendi uygulamanızın adını yazın (örn: "myapp", "vcard", "api")
+  name: app
+  
+  # labels: Kaynağı kategorilere ayırmak için kullanılır
+  # Tüm Kubernetes kaynakları bu labelları taşıyacak, böylece birbirlerini bulabilirler
+  labels:
+    app: app                                    # Ana uygulama adı
+    app.kubernetes.io/name: app               # Standart Kubernetes labeli
+    app.kubernetes.io/component: backend      # Bileşen türü (backend, frontend, database, vb)
+  
+  # annotations: Ek metadata bilgisi (not, açıklama, link vb)
+  annotations:
+    app.openshift.io/vcs-uri: https://github.com/example/app.git  # Git repository linki
+    description: "Template application deployment"
+
+spec:
+  # ========== DEPLOYMENT SPEC BÖLÜMÜ ==========
+  # Kaç pod'un çalıştırılacağını belirtir
+  # Değiştir: İhtiyaca göre değiştir (1=dev, 2-3=production)
+  replicas: 2
+  
+  # selector: Bu deployment hangi pod'ları yönettiğini belirtir
+  # matchLabels altındaki etiketler pod template'inde de AYNI ŞEKİLDE yazılmalıdır
+  selector:
+    matchLabels:
+      app: app
+  
+  # strategy: Pod'ların güncellenmesi nasıl yapılacağını belirtir
+  strategy:
+    type: RollingUpdate  # Tüm pod'ları aynı anda değiştirmek yerine teker teker değiştirir
+    rollingUpdate:
+      maxSurge: 25%           # Güncelleme sırasında ekstra pod sayısı (%25 = 0.5 pod, minimum 1)
+      maxUnavailable: 25%     # Güncelleme sırasında kaç pod'un offline olabileceği
+  
+  # ========== POD TEMPLATE BÖLÜMÜ ==========
+  template:
+    metadata:
+      # Pod'un labelleri (selector'daki etiketler BURADA da olmalı)
+      labels:
+        app: app
+        app.kubernetes.io/name: app
+
+    spec:
+      # ========== CONTAINER BÖLÜMÜ ==========
+      containers:
+      - name: app  # Container'ın adı. Pod içinde birden fazla container varsa her birine benzersiz ad gerekir
+        
+        # ========== IMAGE BÖLÜMÜ ==========
+        # image: Hangi Docker image'ı kullanacağını belirtir
+        # Format: [registry]/[namespace]/[image_name]:[tag]
+        # Örnekler:
+        #   - image-registry.openshift-image-registry.svc:5000/my-namespace/myapp:latest
+        #   - docker.io/library/nginx:1.21
+        #   - registry.redhat.io/rhel8/rhel:latest
+        # Değiştir: Kendi image'ınızın registry ve namespace'ini yazın
+        image: image-registry.openshift-image-registry.svc:5000/my-namespace/app:latest
+        
+        # imagePullPolicy: Image yoksa/güncellemesi yapılmış mı kontrol etme seçeneği
+        # Always: Her zaman repodan çek (production için önerilir)
+        # IfNotPresent: Lokalde yoksa çek
+        # Never: Hiçbir zaman çekme (offline mode)
+        imagePullPolicy: IfNotPresent
+        
+        # ========== PORT BÖLÜMÜ ==========
+        # Container'ın hangi portlarda dinlediğini belirtir
+        ports:
+        # HTTP portu (örn: web uygulaması için)
+        - containerPort: 8080
+          name: http              # Port'a verilen isim (sadece referans için)
+          protocol: TCP
+        # HTTPS portu (isteğe bağlı)
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        
+        # ========== ORTAM DEĞİŞKENLERİ ==========
+        # Container'a iletilecek ortam değişkenleri (konfigürasyon değerleri)
+        env:
+        - name: JAVA_HOME
+          value: /usr/lib/jvm/java-17
+        - name: LOG_LEVEL
+          value: "INFO"
+        # ConfigMap'tan değer çekme örneği:
+        - name: APP_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: app-config        # ConfigMap'ın adı
+              key: config.properties  # ConfigMap'ın içinde hangi key
+        # Secret'tan değer çekme örneği:
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets       # Secret'ın adı
+              key: db-password        # Secret'ın içinde hangi key
+        
+        # ========== RESOURCE TALEPLERI ==========
+        # Konteyner'in kaç CPU ve bellek ihtiyacı olduğunu belirtir
+        # Bu değerler OpenShift'in pod'ları düğümlere dağıtmasında kullanılır
+        resources:
+          # requests: Garantili kaynak miktarı (pod kesinlikle bu kadar alacak)
+          requests:
+            memory: "256Mi"    # 256 MB bellek
+            cpu: "100m"        # 100 millicore (0.1 CPU)
+          # limits: Maximum kullanılacak kaynak miktarı (bunu aşarsa pod durdurulur)
+          limits:
+            memory: "512Mi"    # 512 MB bellek
+            cpu: "500m"        # 500 millicore (0.5 CPU)
+        
+        # ========== SAĞLIK KONTROLLERI ==========
+        # Container'ın sağlıklı çalışıp çalışmadığını kontrol eder
+        
+        # livenessProbe: Pod canlı mı? Değilse restart et
+        livenessProbe:
+          httpGet:
+            path: /health           # Kontrol için hangi endpoint'e istek yapacak
+            port: 8080              # Hangi portta
+          initialDelaySeconds: 30   # Konteyner başladıktan kaç saniye sonra kontrol başlasın
+          periodSeconds: 10         # Her kaç saniyede bir kontrol yapılacak
+          timeoutSeconds: 5         # Kontrol isteğinin timeout süresi
+          failureThreshold: 3       # Kaç başarısızlıktan sonra pod öldürülecek
+        
+        # readinessProbe: Pod trafik almaya hazır mı? Değilse traffic gönderme
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        
+        # ========== VOLUME MOUNT BÖLÜMÜ ==========
+        # Container'ın filesistem'ine mounting yapmak istersen burada belirtilir
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config                  # Container içinde nereye mount edilecek
+          readOnly: true                          # Sadece okuma (yazamaz)
+        - name: shared-storage
+          mountPath: /app/data
+      
+      # ========== VOLUME BÖLÜMÜ ==========
+      # Container'ın mount edeceği volume'lerin tanımı
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-config           # Hangi ConfigMap'tan veri alınacak
+          defaultMode: 420           # Dosya izinleri (0644)
+      - name: shared-storage
+        emptyDir: {}                 # Boş bir volume (pod silininceye kadar kalır, silinirse veriler gider)
+        # PersistentVolumeClaim örneği:
+        # persistentVolumeClaim:
+        #   claimName: app-pvc
+      
+      # ========== POD AYARLARI ==========
+      terminationGracePeriodSeconds: 30  # Pod'un kapatılması için kaç saniye beklenecek (graceful shutdown)
+      restartPolicy: Always              # Pod çarptığında restart et
+      securityContext: {}                # Pod'un güvenlik ayarları

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # 1. Service adı, farklı uygulamalar için benzersiz olmalıdır.
+  name: service-c
+  labels:
+    app: repo-template1
+    component: service-c
+spec:
+  # 2. Selector, bu Service'in hangi Pod'lara bağlanacağını belirtir.
+  selector:
+    app: repo-template1
+    component: service-c
+  ports:
+  - # 3. Service portu, diğer uygulamaların bağlanacağı porttur.
+    port: 8081
+    # 4. targetPort, container içinde uygulamanın kullandığı porttur.
+    targetPort: http
+    # 5. Port ismi özellikle Route ve probe konfigürasyonlarında yararlıdır.
+    name: http
+  type: ClusterIP

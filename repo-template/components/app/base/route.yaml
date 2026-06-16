@@ -1,0 +1,65 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # ========== ROUTE METADATASı ==========
+  # Route, OpenShift'e özel kaynaktır (Kubernetes'te yoktur)
+  # Service'i internet'e (cluster dışına) açar
+  name: app
+  
+  labels:
+    app: app
+  
+  annotations:
+    # Route'un hangi git repository'sinden geldiğini belirtir (opsiyonel)
+    app.openshift.io/vcs-uri: https://github.com/example/app.git
+
+spec:
+  # ========== ROUTE SPEC ==========
+  
+  # to: Trafik hangi Service'e yönlendirilecek
+  to:
+    kind: Service          # Hedef kaynağın türü
+    name: app              # Service'in adı
+    weight: 100            # Trafik dağıtım ağırlığı (birden fazla service varsa)
+  
+  # port: Trafik hangi Service port'una yönlendirilecek
+  port:
+    targetPort: http       # Service'te tanımlı port adı
+  
+  # host: Route'un DNS adı (opsiyonel, otomatik oluşturulur)
+  # host: app.example.com
+  
+  # path: URL path (opsiyonel)
+  # path: /api
+  
+  # ========== TLS/HTTPS AYARLARI ==========
+  # OpenShift otomatik olarak self-signed sertifika oluşturur ve HTTPS sağlar
+  tls:
+    termination: edge                              # TLS sonlandırma yeri (edge, passthrough, reencrypt)
+    insecureEdgeTerminationPolicy: Redirect       # HTTP → HTTPS redirect
+    # Kendi sertifikası varsa:
+    # certificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ... sertifika içeriği ...
+    #   -----END CERTIFICATE-----
+    # key: |
+    #   -----BEGIN RSA PRIVATE KEY-----
+    #   ... private key içeriği ...
+    #   -----END RSA PRIVATE KEY-----
+    # caCertificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ... CA sertifikası ...
+    #   -----END CERTIFICATE-----
+  
+  # wildcardPolicy: Wildcard domain'ler için policy
+  wildcardPolicy: None    # Wildcard'ları kabul etme
+
+# ========== TLS TERMINATION TÜRLERİ ==========
+# edge: OpenShift'te TLS sonlanır, arka taraf HTTP (HTTP ile iletişim)
+# passthrough: TLS'i pod'a kadar taşı, pod kendi TLS'i yönetsin
+# reencrypt: OpenShift'te TLS sonlanır, pod'la yeni TLS bağlantısı kurulur
+
+# Notlar:
+# - Route URL otomatik: https://app-namespace.apps.cluster.example.com
+# - Wildcard DNS varsa: https://app-namespace.apps.cluster.example.com
+# - Custom domain için: OpenShift'in DNS'ini konfigüre et

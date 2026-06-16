@@ -1,0 +1,23 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # Route kaydı, OpenShift dışarıdan erişim için kullanır.
+  name: service-a
+  labels:
+    app: repo-template1
+    component: service-a
+spec:
+  # Hedef servis: traffic bu servis üzerinden yönlendirilecek.
+  to:
+    kind: Service
+    name: service-a
+    weight: 100
+  port:
+    # Hedef port, Service'te tanımlanmış port ismiyle eşlenir.
+    targetPort: http
+  tls:
+    # Edge TLS, terminasyonu OpenShift router yapar.
+    termination: edge
+    # Güvenli olmayan HTTP istekleri HTTPS'e yönlendirilir.
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. Prod ortamı için tüm bileşenler
+resources:
+- ../../../components/saha-manager/base
+- ../../../components/saha-web/base
+- ../../../components/saha-sync/base
+- ../../../components/saha-pars/base
+
+# 2. Prod ortamı replika değerleri (yüksek)
+replicas:
+- name: saha-manager
+  count: 3
+- name: saha-web
+  count: 2
+- name: saha-sync
+  count: 3
+- name: saha-pars
+  count: 3
+
+# 3. Prod ortamı labels
+labels:
+- includeSelectors: true
+  pairs:
+    environment: prod
+    scenario: full

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # 1. Service adı, pod'lara erişim noktasıdır
+  name: saha-manager
+  labels:
+    app: saha-manager
+    app.kubernetes.io/component: saha-manager
+    app.kubernetes.io/name: saha-manager
+spec:
+  # 2. Service türü ClusterIP, yalnızca cluster içinden erişilebilir
+  type: ClusterIP
+  # 3. Pod selector, bu service hangi pod'lara trafik gönderecek
+  selector:
+    app: saha-manager
+  # 4. Port tanımlamaları
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 8443
+    targetPort: 8443
+    protocol: TCP
+  - name: jolokia
+    port: 8778
+    targetPort: 8778
+    protocol: TCP

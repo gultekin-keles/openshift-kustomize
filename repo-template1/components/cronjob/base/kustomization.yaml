@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. CronJob bileşeni için kaynak listesi.
+resources:
+- cronjob.yaml
+
+# 2. Etiketler, bu komponentin kaynaklarını gruplamak için kullanılır.
+labels:
+- pairs:
+    app: repo-template1
+    component: cronjob

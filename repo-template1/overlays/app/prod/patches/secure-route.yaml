@@ -1,0 +1,10 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # 1. Bu patch, route'u güvenli TLS yeniden şifreleme moduna geçirir.
+  name: service-a
+spec:
+  # 2. reencrypt TLS, hem edge hem de backend arası şifrelenmeyi sağlar.
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect

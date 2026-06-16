@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # ========== SERVICE METADATASı ==========
+  # Service pod'ları dış dünyaya ve pod'lar arası haberleşmeyi sağlar
+  name: app
+  
+  labels:
+    app: app
+    app.kubernetes.io/name: app
+
+spec:
+  # ========== SERVICE SPEC ==========
+  
+  # selector: Hangi pod'ları bu service ile ilişkilendireceğini belirtir
+  # Pod'ların label'ları bu selector'daki değerlerle eşleşmesi gerekir
+  selector:
+    app: app  # Bu label'a sahip pod'ları bul ve bağla
+  
+  # ports: Service'in hangi portlarda dinleyeceğini belirtir
+  # Service'e gelen trafik, pod'ların containerPort'larına yönlendirilir
+  ports:
+  # HTTP portu
+  - port: 8080                    # Service'in hangi portta dinleyeceği (dış port)
+    targetPort: http              # Pod'ların hangi portuna yönlendirilecek
+    name: http                     # Port'un adı
+    protocol: TCP
+  # HTTPS portu (isteğe bağlı)
+  - port: 8443
+    targetPort: https
+    name: https
+    protocol: TCP
+  
+  # type: Service'in nasıl expose edileceğini belirtir
+  # ClusterIP: Sadece cluster içinde erişilebilir (default, güvenli)
+  # NodePort: Cluster'ın her node'unda bir port açar
+  # LoadBalancer: Dış load balancer'ı kullanır (cloud provider gerekli)
+  # ExternalName: Harici bir servise yönlendir
+  type: ClusterIP
+
+# Notlar:
+# - Service'in DNS adı: "service-name.namespace.svc.cluster.local"
+#   Örn: "app.default.svc.cluster.local"
+# - Diğer pod'lar service'e erişmek için: "app:8080"
+# - OpenShift'te Route kullanarak service'i internet'e açabilirsiniz

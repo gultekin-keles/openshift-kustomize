@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # 1. OpenShift uygulaması için servis adı.
+  name: ocp-app
+  labels:
+    app: repo-template1
+    component: ocp-app
+spec:
+  # 2. Selector, bu servisin trafik yönlendireceği Podları belirler.
+  selector:
+    app: repo-template1
+    component: ocp-app
+  ports:
+  - # 3. Cluster içi trafik bu porttan yönlendirilir.
+    port: 8080
+    targetPort: 8080
+    # 4. Port ismi Route ve probe tanımlamalarında kullanılabilir.
+    name: http
+  # 5. ClusterIP, bu servisin yalnızca cluster içinden erişilebilir olmasını sağlar.
+  type: ClusterIP

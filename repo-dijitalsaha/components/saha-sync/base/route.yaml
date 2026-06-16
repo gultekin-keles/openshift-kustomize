@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: saha-sync
+  labels:
+    app: saha-sync
+    app.kubernetes.io/component: saha-sync
+    app.kubernetes.io/name: saha-sync
+spec:
+  to:
+    kind: Service
+    name: saha-sync
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
