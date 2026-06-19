@@ -180,3 +180,5 @@ kubectl delete -k overlays/vcard/prod
 - namePrefix ve nameSuffix ile resource isimleri ayırılmıştır
 - Labels ile ortam tanımlaması yapılmıştır
 - Prod ortamında `imagePullPolicy: Always` ile her deployment'da en son image çekilir
+
+PR: add repo-vcard-patch for review (generated)
