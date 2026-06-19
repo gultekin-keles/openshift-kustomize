@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: vcard-pre-prod
+
+resources:
+- ../../../components/vcard/base
+
+namePrefix: preprod-
+nameSuffix: -preprod
+
+replicas:
+- name: vcard
+  count: 2
+
+labels:
+- includeSelectors: true
+  pairs:
+    environment: pre-prod
+    cluster: pre-prod-cluster
+
+images:
+- name: image-registry.openshift-image-registry.svc:5000/vcard/vcard
+  newName: preprod-registry.openshift-image-registry.svc:5000/vcard/vcard
+  newTag: v1.0-preprod
+
+patchesJson6902:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: vcard
+  path: deployment-patch.yaml

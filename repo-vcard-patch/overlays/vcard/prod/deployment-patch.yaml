@@ -1,0 +1,24 @@
+# Production Cluster - Resource patch using JSON6902
+# Prod ortamı için kaynak limitleri, pull policy ve rolling update ayarları
+
+- op: replace
+  path: /spec/strategy/rollingUpdate/maxSurge
+  value: "50%"
+- op: replace
+  path: /spec/strategy/rollingUpdate/maxUnavailable
+  value: 0
+- op: replace
+  path: /spec/template/spec/containers/0/imagePullPolicy
+  value: Always
+- op: replace
+  path: /spec/template/spec/containers/0/resources/requests/memory
+  value: "1Gi"
+- op: replace
+  path: /spec/template/spec/containers/0/resources/requests/cpu
+  value: "500m"
+- op: replace
+  path: /spec/template/spec/containers/0/resources/limits/memory
+  value: "2Gi"
+- op: replace
+  path: /spec/template/spec/containers/0/resources/limits/cpu
+  value: "2000m"
