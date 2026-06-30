@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: repo-gultekin-prod
+
+resources:
+  - ../../components/apache/base
+
+replicas:
+  - name: apache
+    count: 3
+
+commonLabels:
+  environment: prod
+
+configMapGenerator:
+  - name: apache-index-html
+    literals:
+      - index.html=<html><body><h1>repo-gultekin Apache - PROD</h1></body></html>
